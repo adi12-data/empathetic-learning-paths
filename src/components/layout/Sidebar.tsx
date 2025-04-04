@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { UserMenu } from "./UserMenu";
+import { useAuth } from "@/context/AuthContext";
 
 interface SidebarProps {
   className?: string;
@@ -25,6 +27,7 @@ export function Sidebar({ className }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const { toast } = useToast();
   const location = useLocation();
+  const { isTeacher } = useAuth();
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
@@ -37,15 +40,24 @@ export function Sidebar({ className }: SidebarProps) {
     });
   };
 
-  const navigation = [
-    { name: "Dashboard", href: "/", icon: Home },
-    { name: "Students", href: "/students", icon: Users },
-    { name: "Analytics", href: "/analytics", icon: BarChart2 },
-    { name: "Grades", href: "/grades", icon: GraduationCap },
-    { name: "Courses", href: "/courses", icon: BookOpen },
-    { name: "Calendar", href: "/calendar", icon: Calendar },
-    { name: "Alerts", href: "/alerts", icon: AlertCircle },
+  // Define navigation based on user role
+  const commonNavigation = [
+    { name: "Dashboard", href: "/", icon: Home, forRoles: ['teacher', 'student'] },
+    { name: "Grades", href: "/grades", icon: GraduationCap, forRoles: ['teacher', 'student'] },
+    { name: "Courses", href: "/courses", icon: BookOpen, forRoles: ['teacher', 'student'] },
+    { name: "Calendar", href: "/calendar", icon: Calendar, forRoles: ['teacher', 'student'] },
+    { name: "Alerts", href: "/alerts", icon: AlertCircle, forRoles: ['teacher', 'student'] },
   ];
+  
+  const teacherOnlyNavigation = [
+    { name: "Students", href: "/students", icon: Users, forRoles: ['teacher'] },
+    { name: "Analytics", href: "/analytics", icon: BarChart2, forRoles: ['teacher'] },
+  ];
+
+  // Combine based on user role
+  const navigation = isTeacher 
+    ? [...commonNavigation, ...teacherOnlyNavigation] 
+    : commonNavigation;
 
   return (
     <div
@@ -96,7 +108,13 @@ export function Sidebar({ className }: SidebarProps) {
           })}
         </nav>
       </div>
+
       <div className="p-4">
+        {!collapsed && (
+          <div className="mb-4">
+            <UserMenu />
+          </div>
+        )}
         <Button
           variant="ghost"
           size={collapsed ? "icon" : "default"}
