@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
   BookOpen,
@@ -24,6 +24,7 @@ interface SidebarProps {
 export function Sidebar({ className }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const { toast } = useToast();
+  const location = useLocation();
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
@@ -37,13 +38,13 @@ export function Sidebar({ className }: SidebarProps) {
   };
 
   const navigation = [
-    { name: "Dashboard", href: "/", icon: Home, current: true },
-    { name: "Students", href: "#", icon: Users, current: false, onClick: handleNotImplemented },
-    { name: "Analytics", href: "#", icon: BarChart2, current: false, onClick: handleNotImplemented },
-    { name: "Grades", href: "#", icon: GraduationCap, current: false, onClick: handleNotImplemented },
-    { name: "Courses", href: "#", icon: BookOpen, current: false, onClick: handleNotImplemented },
-    { name: "Calendar", href: "#", icon: Calendar, current: false, onClick: handleNotImplemented },
-    { name: "Alerts", href: "#", icon: AlertCircle, current: false, onClick: handleNotImplemented },
+    { name: "Dashboard", href: "/", icon: Home },
+    { name: "Students", href: "/students", icon: Users },
+    { name: "Analytics", href: "/analytics", icon: BarChart2 },
+    { name: "Grades", href: "/grades", icon: GraduationCap },
+    { name: "Courses", href: "/courses", icon: BookOpen },
+    { name: "Calendar", href: "/calendar", icon: Calendar },
+    { name: "Alerts", href: "/alerts", icon: AlertCircle },
   ];
 
   return (
@@ -75,15 +76,14 @@ export function Sidebar({ className }: SidebarProps) {
       <div className="flex-1 overflow-y-auto">
         <nav className="px-2 py-4 space-y-1">
           {navigation.map((item) => {
-            const Component = item.href === "#" ? "button" : Link;
+            const isActive = location.pathname === item.href;
             return (
-              <Component
+              <Link
                 key={item.name}
-                to={item.href === "#" ? undefined : item.href}
-                onClick={item.onClick}
+                to={item.href}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                  item.current
+                  isActive
                     ? "bg-primary/10 text-primary hover:bg-primary/20"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   collapsed ? "justify-center" : ""
@@ -91,7 +91,7 @@ export function Sidebar({ className }: SidebarProps) {
               >
                 <item.icon className="h-5 w-5" />
                 {!collapsed && <span>{item.name}</span>}
-              </Component>
+              </Link>
             );
           })}
         </nav>
