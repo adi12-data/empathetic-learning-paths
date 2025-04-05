@@ -1,6 +1,5 @@
 
-import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { 
   Card, 
@@ -18,11 +17,8 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
-import { Search, UserPlus, Loader2 } from "lucide-react";
+import { Search, UserPlus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import {
   Pagination,
   PaginationContent,
@@ -32,8 +28,9 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { useToast } from "@/hooks/use-toast";
 
-// Define the student type based on our view
+// Define the student type
 type Student = {
   id: string;
   full_name: string;
@@ -50,40 +47,84 @@ const StudentsPage = () => {
   const studentsPerPage = 6;
   const { toast } = useToast();
   
-  // Define a function to fetch students from Supabase
-  const fetchStudents = async (): Promise<Student[]> => {
-    const { data, error } = await supabase
-      .from('student_view')
-      .select('*');
-    
-    if (error) {
-      console.error("Error fetching students:", error);
-      toast({
-        title: "Error fetching students",
-        description: error.message,
-        variant: "destructive",
-      });
-      return [];
+  // Mock student data (would come from API in production)
+  const mockStudents: Student[] = [
+    {
+      id: "1",
+      full_name: "Emma Thompson",
+      email: "emma.t@example.edu",
+      grade_level: "10",
+      last_active: new Date(Date.now() - 1000 * 60 * 10).toISOString(), // 10 minutes ago
+      attendance: "95%",
+      performance: "excellent"
+    },
+    {
+      id: "2",
+      full_name: "Michael Johnson",
+      email: "michael.j@example.edu",
+      grade_level: "11",
+      last_active: new Date(Date.now() - 1000 * 60 * 60).toISOString(), // 1 hour ago
+      attendance: "87%",
+      performance: "satisfied"
+    },
+    {
+      id: "3",
+      full_name: "Sophia Williams",
+      email: "sophia.w@example.edu",
+      grade_level: "9",
+      last_active: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+      attendance: "92%",
+      performance: "confused"
+    },
+    {
+      id: "4",
+      full_name: "David Brown",
+      email: "david.b@example.edu",
+      grade_level: "10",
+      last_active: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(), // 3 hours ago
+      attendance: "98%",
+      performance: "satisfied"
+    },
+    {
+      id: "5",
+      full_name: "Olivia Davis",
+      email: "olivia.d@example.edu",
+      grade_level: "12",
+      last_active: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
+      attendance: "78%",
+      performance: "struggling"
+    },
+    {
+      id: "6",
+      full_name: "Ethan Miller",
+      email: "ethan.m@example.edu",
+      grade_level: "11",
+      last_active: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), // 2 days ago
+      attendance: "85%",
+      performance: "excellent"
+    },
+    {
+      id: "7",
+      full_name: "Ava Wilson",
+      email: "ava.w@example.edu",
+      grade_level: "9",
+      last_active: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), // 3 days ago
+      attendance: "90%",
+      performance: "confused"
+    },
+    {
+      id: "8",
+      full_name: "Noah Moore",
+      email: "noah.m@example.edu",
+      grade_level: "10",
+      last_active: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), // 4 days ago
+      attendance: "94%",
+      performance: "satisfied"
     }
-
-    // Add mock performance data to each student (would be real in a production app)
-    const performanceOptions: ('excellent' | 'satisfied' | 'confused' | 'struggling')[] = 
-      ['excellent', 'satisfied', 'confused', 'struggling'];
-    
-    return data.map(student => ({
-      ...student,
-      performance: performanceOptions[Math.floor(Math.random() * performanceOptions.length)]
-    }));
-  };
-
-  // Use react-query to fetch and cache the students data
-  const { data: students = [], isLoading, isError } = useQuery({
-    queryKey: ['students'],
-    queryFn: fetchStudents,
-  });
+  ];
 
   // Filter students based on search query
-  const filteredStudents = students.filter(student => 
+  const filteredStudents = mockStudents.filter(student => 
     student.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
     student.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     student.grade_level?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -170,102 +211,79 @@ const StudentsPage = () => {
           <CardTitle>All Students</CardTitle>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-            // Skeleton loading state
-            <div className="space-y-4">
-              {[...Array(studentsPerPage)].map((_, i) => (
-                <div key={i} className="flex space-x-4 items-center">
-                  <Skeleton className="h-4 w-[250px]" />
-                  <Skeleton className="h-4 w-[200px]" />
-                  <Skeleton className="h-4 w-[100px]" />
-                  <Skeleton className="h-4 w-[100px]" />
-                  <Skeleton className="h-4 w-[100px]" />
-                  <Skeleton className="h-4 w-[100px]" />
-                </div>
-              ))}
-            </div>
-          ) : isError ? (
-            <div className="text-center py-8">
-              <p className="text-red-500">Failed to load students.</p>
-              <p className="text-muted-foreground">Please try refreshing the page.</p>
-            </div>
-          ) : (
-            <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Grade</TableHead>
-                    <TableHead>Performance</TableHead>
-                    <TableHead>Last Active</TableHead>
-                    <TableHead>Attendance</TableHead>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Grade</TableHead>
+                <TableHead>Performance</TableHead>
+                <TableHead>Last Active</TableHead>
+                <TableHead>Attendance</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {currentStudents.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center">
+                    No students found.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                currentStudents.map((student) => (
+                  <TableRow key={student.id}>
+                    <TableCell className="font-medium">{student.full_name}</TableCell>
+                    <TableCell>{student.email}</TableCell>
+                    <TableCell>{student.grade_level || "N/A"}</TableCell>
+                    <TableCell>{student.performance && getPerformanceBadge(student.performance)}</TableCell>
+                    <TableCell>{formatLastActive(student.last_active)}</TableCell>
+                    <TableCell>{student.attendance}</TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {currentStudents.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center">
-                        No students found.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    currentStudents.map((student) => (
-                      <TableRow key={student.id}>
-                        <TableCell className="font-medium">{student.full_name}</TableCell>
-                        <TableCell>{student.email}</TableCell>
-                        <TableCell>{student.grade_level || "N/A"}</TableCell>
-                        <TableCell>{student.performance && getPerformanceBadge(student.performance)}</TableCell>
-                        <TableCell>{formatLastActive(student.last_active)}</TableCell>
-                        <TableCell>{student.attendance}</TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-              
-              {/* Pagination */}
-              {filteredStudents.length > studentsPerPage && (
-                <Pagination className="mt-6">
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious 
-                        onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
-                        className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
-                      />
-                    </PaginationItem>
-                    
-                    {[...Array(totalPages)].map((_, idx) => {
-                      // Show first page, last page, and pages around current page
-                      const pageNum = idx + 1;
-                      if (pageNum === 1 || pageNum === totalPages || 
-                          (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)) {
-                        return (
-                          <PaginationItem key={idx}>
-                            <PaginationLink 
-                              isActive={pageNum === currentPage}
-                              onClick={() => handlePageChange(pageNum)}
-                            >
-                              {pageNum}
-                            </PaginationLink>
-                          </PaginationItem>
-                        );
-                      } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
-                        return <PaginationEllipsis key={idx} />;
-                      }
-                      return null;
-                    })}
-                    
-                    <PaginationItem>
-                      <PaginationNext 
-                        onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
-                        className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
+                ))
               )}
-            </>
+            </TableBody>
+          </Table>
+          
+          {/* Pagination */}
+          {filteredStudents.length > studentsPerPage && (
+            <Pagination className="mt-6">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                  />
+                </PaginationItem>
+                
+                {[...Array(totalPages)].map((_, idx) => {
+                  // Show first page, last page, and pages around current page
+                  const pageNum = idx + 1;
+                  if (pageNum === 1 || pageNum === totalPages || 
+                      (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)) {
+                    return (
+                      <PaginationItem key={idx}>
+                        <PaginationLink 
+                          isActive={pageNum === currentPage}
+                          onClick={() => handlePageChange(pageNum)}
+                        >
+                          {pageNum}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                  } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
+                    return <PaginationEllipsis key={idx} />;
+                  }
+                  return null;
+                })}
+                
+                <PaginationItem>
+                  <PaginationNext 
+                    onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
+                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           )}
         </CardContent>
       </Card>
