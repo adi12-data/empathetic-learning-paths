@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, BookOpen, School } from "lucide-react";
 import { z } from "zod";
 
 const loginSchema = z.object({
@@ -77,98 +77,118 @@ export default function Auth() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 flex flex-col items-center">
-          <div className="bg-primary/10 p-3 rounded-full mb-2">
-            <GraduationCap className="h-8 w-8 text-primary" />
+    <div className="flex min-h-screen items-center justify-center auth-page-bg py-12 px-4 sm:px-6 lg:px-8">
+      <div className="auth-decoration auth-decoration-1"></div>
+      <div className="auth-decoration auth-decoration-2"></div>
+      <div className="auth-decoration auth-decoration-3"></div>
+      
+      <div className="w-full max-w-md relative z-10">
+        <div className="absolute -top-20 left-1/2 transform -translate-x-1/2">
+          <div className="flex justify-center items-center">
+            <div className="bg-gradient-to-br from-primary to-secondary rounded-full p-4 shadow-lg">
+              <School className="h-10 w-10 text-white" />
+            </div>
           </div>
-          <CardTitle className="text-2xl text-center">
-            {isLogin ? "Sign in to TeachAssist" : "Create an Account"}
-          </CardTitle>
-          <CardDescription className="text-center">
-            {isLogin
-              ? "Enter your email to sign in to your account"
-              : "Enter your information to create a new account"}
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            {!isLogin && (
+        </div>
+        
+        <Card className="auth-card mt-10">
+          <CardHeader className="space-y-2 text-center pb-2">
+            <CardTitle className="text-2xl font-bold">
+              {isLogin ? "Welcome Back" : "Join TeachAssist"}
+            </CardTitle>
+            <CardDescription>
+              {isLogin
+                ? "Enter your credentials to access your account"
+                : "Create an account to get started"
+              }
+            </CardDescription>
+          </CardHeader>
+          
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-4 pt-2">
+              {!isLogin && (
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Full Name</Label>
+                  <Input
+                    id="fullName"
+                    placeholder="Enter your full name"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="bg-white/50"
+                  />
+                  {errors.fullName && (
+                    <p className="text-sm text-destructive">{errors.fullName}</p>
+                  )}
+                </div>
+              )}
+
               <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
-                  id="fullName"
-                  placeholder="Enter your full name"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="bg-white/50"
                 />
-                {errors.fullName && (
-                  <p className="text-sm text-destructive">{errors.fullName}</p>
+                {errors.email && (
+                  <p className="text-sm text-destructive">{errors.email}</p>
                 )}
               </div>
-            )}
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              {errors.email && (
-                <p className="text-sm text-destructive">{errors.email}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              {errors.password && (
-                <p className="text-sm text-destructive">{errors.password}</p>
-              )}
-            </div>
-
-            {!isLogin && (
               <div className="space-y-2">
-                <Label>I am a:</Label>
-                <RadioGroup 
-                  value={role} 
-                  onValueChange={(value) => setRole(value as "teacher" | "student")}
-                  className="flex space-x-4"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="student" id="student" />
-                    <Label htmlFor="student">Student</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="teacher" id="teacher" />
-                    <Label htmlFor="teacher">Teacher</Label>
-                  </div>
-                </RadioGroup>
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="bg-white/50"
+                />
+                {errors.password && (
+                  <p className="text-sm text-destructive">{errors.password}</p>
+                )}
               </div>
-            )}
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full">
-              {isLogin ? "Sign In" : "Create Account"}
-            </Button>
-            <Button type="button" variant="link" onClick={toggleMode} className="w-full">
-              {isLogin
-                ? "Don't have an account? Sign up"
-                : "Already have an account? Sign in"}
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
+
+              {!isLogin && (
+                <div className="space-y-2">
+                  <Label>I am a:</Label>
+                  <RadioGroup 
+                    value={role} 
+                    onValueChange={(value) => setRole(value as "teacher" | "student")}
+                    className="flex gap-6"
+                  >
+                    <div className="flex flex-col items-center space-y-2 bg-white/50 p-3 rounded-lg border border-border transition-all hover:border-primary">
+                      <RadioGroupItem value="student" id="student" className="sr-only" />
+                      <BookOpen className="h-6 w-6 text-muted-foreground" />
+                      <Label htmlFor="student" className="cursor-pointer">Student</Label>
+                    </div>
+                    
+                    <div className="flex flex-col items-center space-y-2 bg-white/50 p-3 rounded-lg border border-border transition-all hover:border-primary">
+                      <RadioGroupItem value="teacher" id="teacher" className="sr-only" />
+                      <GraduationCap className="h-6 w-6 text-muted-foreground" />
+                      <Label htmlFor="teacher" className="cursor-pointer">Teacher</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+              )}
+            </CardContent>
+            
+            <CardFooter className="flex flex-col space-y-4 border-t pt-4">
+              <Button type="submit" className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90 transition-opacity">
+                {isLogin ? "Sign In" : "Create Account"}
+              </Button>
+              <Button type="button" variant="link" onClick={toggleMode} className="w-full">
+                {isLogin
+                  ? "Don't have an account? Sign up"
+                  : "Already have an account? Sign in"}
+              </Button>
+            </CardFooter>
+          </form>
+        </Card>
+      </div>
     </div>
   );
 }
