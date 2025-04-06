@@ -14,9 +14,10 @@ type AuthContextType = {
   session: Session | null;
   isLoading: boolean;
   isTeacher: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
   signUp: (email: string, password: string, fullName: string, role: 'teacher' | 'student') => Promise<void>;
   signOut: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -83,17 +84,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string, rememberMe = false) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({ 
+        email, 
+        password,
+        options: {
+          // Adjust session duration based on rememberMe preference
+          sessionOptions: {
+            persistSession: true,
+          }
+        }
+      });
+      
       if (error) throw error;
       navigate('/');
+      toast({
+        title: "Welcome back!",
+        description: "You've successfully signed in.",
+      });
     } catch (error: any) {
       toast({
         title: "Login failed",
         description: error.message || "Please check your credentials and try again.",
         variant: "destructive",
       });
+      throw error;
     }
   };
 
@@ -125,6 +141,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: error.message || "Please check your information and try again.",
         variant: "destructive",
       });
+      throw error;
+    }
+  };
+
+  const resetPassword = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      });
+      
+      if (error) throw error;
+    } catch (error: any) {
+      toast({
+        title: "Password reset failed",
+        description: error.message || "Unable to send password reset email. Please try again.",
+        variant: "destructive",
+      });
+      throw error;
     }
   };
 
@@ -133,6 +167,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       navigate('/auth');
+      toast({
+        title: "Signed out successfully",
+        description: "You have been logged out of your account.",
+      });
     } catch (error: any) {
       toast({
         title: "Sign out failed",
@@ -153,6 +191,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signIn,
         signUp,
         signOut,
+        resetPassword,
       }}
     >
       {children}
