@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Session, User } from "@supabase/supabase-js";
@@ -88,13 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { error } = await supabase.auth.signInWithPassword({ 
         email, 
-        password,
-        options: {
-          // Adjust session duration based on rememberMe preference
-          sessionOptions: {
-            persistSession: true,
-          }
-        }
+        password
       });
       
       if (error) throw error;
@@ -132,7 +125,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Please check your email for a confirmation link.",
       });
       
-      // Navigate to login after successful signup
       navigate('/auth');
       
     } catch (error: any) {
